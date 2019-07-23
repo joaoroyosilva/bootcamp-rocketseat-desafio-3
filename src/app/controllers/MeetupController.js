@@ -27,18 +27,26 @@ class MeetupController {
       include: [
         {
           model: User,
-          as: 'user',
           attributes: ['id', 'name'],
-        },
-        {
-          model: File,
-          as: 'logo',
-          attributes: ['id', 'path', 'url'],
         },
       ],
     });
 
     return res.json(meetups);
+  }
+
+  async show(req, res) {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(404).json({ error: 'Meetup not found' });
+    }
+
+    const meetup = await Meetup.findByPk(id, {
+      include: [{ model: File, as: 'logo', attributes: ['id', 'path', 'url'] }],
+    });
+
+    return res.json(meetup);
   }
 
   async store(req, res) {
@@ -82,7 +90,7 @@ class MeetupController {
 
     const user_id = req.userId;
 
-    const meetup = await Meetup.findByPk(req.params.id);
+    let meetup = await Meetup.findByPk(req.params.id);
 
     if (meetup.user_id !== user_id) {
       return res.status(401).json({ error: 'Not authorized.' });
@@ -97,6 +105,10 @@ class MeetupController {
     }
 
     await meetup.update(req.body);
+
+    meetup = await Meetup.findByPk(req.params.id, {
+      include: [{ model: File, as: 'logo', attributes: ['id', 'path', 'url'] }],
+    });
 
     return res.json(meetup);
   }

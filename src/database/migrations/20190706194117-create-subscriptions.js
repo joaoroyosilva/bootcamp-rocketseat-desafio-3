@@ -17,7 +17,7 @@ module.exports = {
       meetup_id: {
         type: Sequelize.INTEGER,
         references: { model: 'meetups', key: 'id' },
-        allowNull: false,
+        allowNull: true,
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
