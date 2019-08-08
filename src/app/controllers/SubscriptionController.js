@@ -15,6 +15,7 @@ class SubscriptionController {
       include: [
         {
           model: Meetup,
+          as: 'meetup',
           where: {
             date: {
               [Op.gt]: new Date(),
@@ -23,7 +24,7 @@ class SubscriptionController {
           required: true,
         },
       ],
-      order: [[Meetup, 'date']],
+      order: [[{ model: Meetup, as: 'meetup' }, 'date']],
     });
 
     return res.json(subscriptions);
@@ -33,10 +34,14 @@ class SubscriptionController {
     const user = await User.findByPk(req.userId);
 
     const meetup = await Meetup.findByPk(req.params.meetup_id, {
-      include: [User],
+      include: [{ model: User, as: 'user' }],
     });
 
-    if (meetup && meetup.user_id === req.userId) {
+    if (!meetup) {
+      return res.status(404).json({ error: 'Meetup not found' });
+    }
+
+    if (meetup.user_id === req.userId) {
       return res
         .status(400)
         .json({ error: "Can't subscribe to you own meetups" });
@@ -53,6 +58,7 @@ class SubscriptionController {
       include: [
         {
           model: Meetup,
+          as: 'meetup',
           required: true,
           where: {
             date: meetup.date,

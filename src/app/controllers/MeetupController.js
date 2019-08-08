@@ -27,7 +27,13 @@ class MeetupController {
       include: [
         {
           model: User,
+          as: 'user',
           attributes: ['id', 'name'],
+        },
+        {
+          model: File,
+          as: 'logo',
+          attributes: ['id', 'path', 'url'],
         },
       ],
     });
@@ -43,7 +49,14 @@ class MeetupController {
     }
 
     const meetup = await Meetup.findByPk(id, {
-      include: [{ model: File, as: 'logo', attributes: ['id', 'path', 'url'] }],
+      include: [
+        { model: File, as: 'logo', attributes: ['id', 'path', 'url'] },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name'],
+        },
+      ],
     });
 
     return res.json(meetup);
@@ -58,7 +71,7 @@ class MeetupController {
       logo_id: Yup.number().required(),
     });
 
-    if (!schema.isValid) {
+    if (!(await schema.isValid(req.body))) {
       return res.status(400).json('Valid is failed');
     }
 
